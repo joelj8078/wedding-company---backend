@@ -94,6 +94,8 @@ flowchart LR
   MasterDB --> admins[(admins collection)]
   MasterDB --> org_testco[(org_testco tenant collection)]
 ```
+---
+
 ## Additional Questions — Architecture, Scalability & Trade-offs
 
 This design works well for a lightweight multi-tenant POC, but has several trade-offs:

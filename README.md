@@ -87,12 +87,29 @@ curl -X DELETE "http://127.0.0.1:8000/org/delete?organization_name=TestCo" -H "A
 
 ## Architecture Diagram
 ```mermaid
-flowchart LR
-  Client -->|REST| FastAPI
-  FastAPI --> MasterDB[(MongoDB Master DB)]
-  MasterDB --> organizations[(organizations collection)]
-  MasterDB --> admins[(admins collection)]
-  MasterDB --> org_testco[(org_testco tenant collection)]
+sequenceDiagram
+    participant U as Admin User
+    participant API as FastAPI Backend
+    participant M as Master DB
+    participant T as Tenant Collections
+
+    U->>API: POST /org/create
+    API->>M: Insert org metadata + create admin
+    API->>T: Create org_<name> collection
+    API-->>U: 200 OK (org created)
+
+    U->>API: POST /admin/login
+    API->>M: Validate password
+    API-->>U: JWT Token
+
+    U->>API: PUT /org/update (requires JWT)
+    API->>T: Create new org_<new_name> and copy data
+    API->>M: Update metadata, drop old collection
+
+    U->>API: DELETE /org/delete (requires JWT)
+    API->>T: Drop tenant collection
+    API->>M: Delete admin + metadata
+    API-->>U: 200 OK (deleted)
 ```
 ---
 

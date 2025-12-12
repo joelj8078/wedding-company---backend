@@ -94,3 +94,31 @@ flowchart LR
   MasterDB --> admins[(admins collection)]
   MasterDB --> org_testco[(org_testco tenant collection)]
 ```
+## Additional Questions — Architecture, Scalability & Trade-offs
+
+This design works well for a lightweight multi-tenant POC, but has several trade-offs:
+
+### 1. Is this a scalable architecture?
+For small-to-medium workloads: yes.  
+Each organization receives an isolated collection (`org_<name>`), and the master DB stores only metadata.  
+MongoDB handles horizontal scaling well, and collection-level isolation is lightweight and fast.
+
+For large-scale scenarios:
+- The number of collections may grow very large.
+- Writes during rename operations involve copying data.
+- A single database may become a bottleneck in high-traffic deployments.
+
+### 2. Trade-offs in the tech stack & design choices
+- **MongoDB** makes dynamic collection creation easy, but lacks strong transactional guarantees across collections.
+- **FastAPI + Motor** is great for async IO, but Python is not as CPU-efficient as Go/Node for extremely high RPS scenarios.
+- **JWT without refresh tokens** is simple, but requires careful rotation strategy in production.
+- **Single database, multiple collections** is simple, but does not give the strict isolation that separate DBs or clusters would.
+
+### 3. How I would design something better (production-grade)
+- Use **separate databases per tenant** (not just collections).
+- Use **MongoDB's `renameCollection`** for renaming instead of manual copy-drop.
+- Add **rate limiting, audit logs, login attempts tracking**.
+- Move secrets to **AWS Secrets Manager / HashiCorp Vault**.
+- Add **refresh tokens + rotating JWT secrets**.
+- Implement **OpenTelemetry tracing** for request paths.
+

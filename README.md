@@ -2,7 +2,7 @@
 
 **Role:** Backend Engineering Intern  
 **Stack:** FastAPI, Motor (async MongoDB driver), PyMongo, Pydantic, JWT, bcrypt.
-Reference: assignment spec (Backend Intern Assignment). :contentReference[oaicite:1]{index=1}
+
 ---
 
 ## What I implemented
